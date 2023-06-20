@@ -10,6 +10,8 @@ use serde::ser::{
 use serde::serde_if_integer128;
 use std::fmt::Write;
 
+use crate::se::WriteExt;
+
 macro_rules! write_primitive {
     ($method:ident ( $ty:ty )) => {
         #[inline]
@@ -125,7 +127,7 @@ impl<'w, 'i, W: Write> ContentSerializer<'w, 'i, W> {
     }
 }
 
-impl<'w, 'i, W: Write> Serializer for ContentSerializer<'w, 'i, W> {
+impl<'w, 'i, W: WriteExt> Serializer for ContentSerializer<'w, 'i, W> {
     type Ok = ();
     type Error = DeError;
 
@@ -297,7 +299,7 @@ impl<'w, 'i, W: Write> Serializer for ContentSerializer<'w, 'i, W> {
     }
 }
 
-impl<'w, 'i, W: Write> SerializeSeq for ContentSerializer<'w, 'i, W> {
+impl<'w, 'i, W: WriteExt> SerializeSeq for ContentSerializer<'w, 'i, W> {
     type Ok = ();
     type Error = DeError;
 
@@ -317,7 +319,7 @@ impl<'w, 'i, W: Write> SerializeSeq for ContentSerializer<'w, 'i, W> {
     }
 }
 
-impl<'w, 'i, W: Write> SerializeTuple for ContentSerializer<'w, 'i, W> {
+impl<'w, 'i, W: WriteExt> SerializeTuple for ContentSerializer<'w, 'i, W> {
     type Ok = ();
     type Error = DeError;
 
@@ -335,7 +337,7 @@ impl<'w, 'i, W: Write> SerializeTuple for ContentSerializer<'w, 'i, W> {
     }
 }
 
-impl<'w, 'i, W: Write> SerializeTupleStruct for ContentSerializer<'w, 'i, W> {
+impl<'w, 'i, W: WriteExt> SerializeTupleStruct for ContentSerializer<'w, 'i, W> {
     type Ok = ();
     type Error = DeError;
 
@@ -557,7 +559,7 @@ pub(super) mod tests {
         serialize_as!(str_non_escaped: "non-escaped string" => "non-escaped string");
         serialize_as!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
-        err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+        err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("Custom serialization is unsupported"));
 
         serialize_as!(option_none: Option::<Enum>::None => "");
         serialize_as!(option_some: Some("non-escaped string") => "non-escaped string");
@@ -745,7 +747,7 @@ pub(super) mod tests {
         serialize_as!(str_non_escaped: "non-escaped string" => "non-escaped string");
         serialize_as!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
-        err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+        err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("Custom serialization is unsupported"));
 
         serialize_as!(option_none: Option::<Enum>::None => "");
         serialize_as!(option_some: Some(Enum::Unit) => "<Unit/>");

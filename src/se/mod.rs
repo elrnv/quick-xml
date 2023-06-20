@@ -86,16 +86,34 @@ use std::str::from_utf8;
 /// a custom type and use it to implement this trait.
 pub trait WriteExt: Write {
     /// Custom write function.
-    fn write_custom(&mut self, value: &[u8]) -> Result<(), DeError>;
+    fn write_bytes(&mut self, value: &[u8]) -> Result<(), DeError>;
 }
 
-impl<W> WriteExt for W where W: Write {
-    fn write_custom(&mut self, _value: &[u8]) -> Result<(), DeError> {
+impl WriteExt for std::string::String {
+    /// Custom write function.
+    fn write_bytes(&mut self, _value: &[u8]) -> Result<(), DeError> {
         Err(DeError::Unsupported(
-            "Custom serialization is unsupported on types that already implement std::fmt::Write".into(),
+            "Custom serialization is unsupported".into(),
         ))
     }
 }
+impl WriteExt for &mut std::string::String {
+    /// Custom write function.
+    fn write_bytes(&mut self, _value: &[u8]) -> Result<(), DeError> {
+        Err(DeError::Unsupported(
+            "Custom serialization is unsupported".into(),
+        ))
+    }
+}
+
+// impl<'a, W> WriteExt for W where W: Write {
+//     /// Custom write function.
+//     fn write_bytes(&mut self, _value: &[u8]) -> Result<(), DeError> {
+//         Err(DeError::Unsupported(
+//             "Custom serialization is unsupported".into(),
+//         ))
+//     }
+// }
 
 /// Serialize struct into a `Write`r.
 ///

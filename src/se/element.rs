@@ -649,7 +649,7 @@ mod tests {
         serialize_as!(str_non_escaped: "non-escaped string" => "<root>non-escaped string</root>");
         serialize_as!(str_escaped: "<\"escaped & string'>" => "<root>&lt;&quot;escaped &amp; string&apos;&gt;</root>");
 
-        err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+        err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("Custom serialization is unsupported"));
 
         serialize_as!(option_none: Option::<&str>::None => "<root/>");
         serialize_as!(option_some: Some("non-escaped string") => "<root>non-escaped string</root>");
@@ -765,7 +765,7 @@ mod tests {
                         content: Bytes(b"<\"escaped & bytes'>"),
                         after: "answer",
                     }
-                    => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+                    => Unsupported("Custom serialization is unsupported"));
 
                 text!(option_none: Option::<&str>::None);
                 text!(option_some: Some("non-escaped string") => "non-escaped string");
@@ -892,7 +892,7 @@ mod tests {
                         content: Bytes(b"<\"escaped & bytes'>"),
                         after: "answer",
                     }
-                    => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+                    => Unsupported("Custom serialization is unsupported"));
 
                 text!(option_none: Option::<&str>::None => "");
                 text!(option_some: Some("non-escaped string") => "non-escaped string");
@@ -1019,7 +1019,7 @@ mod tests {
                         content: Bytes(b"<\"escaped & bytes'>"),
                         after: "answer",
                     }
-                    => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+                    => Unsupported("Custom serialization is unsupported"));
 
                 text!(option_none: Option::<&str>::None => "");
                 text!(option_some: Some("non-escaped string") => "non-escaped string");
@@ -1146,7 +1146,7 @@ mod tests {
 
                 err!(bytes:
                     BTreeMap::from([("$value", Bytes(b"<\"escaped & bytes'>"))])
-                    => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+                    => Unsupported("Custom serialization is unsupported"));
 
                 value!(option_none: Option::<&str>::None);
                 value!(option_some: Some("non-escaped string") => "non-escaped string");
@@ -1256,7 +1256,7 @@ mod tests {
                         content: Bytes(b"<\"escaped & bytes'>"),
                         after: "answer",
                     }
-                    => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+                    => Unsupported("Custom serialization is unsupported"));
 
                 value!(option_none: Option::<&str>::None => "");
                 value!(option_some: Some("non-escaped string") => "non-escaped string");
@@ -1378,7 +1378,7 @@ mod tests {
                         content: Bytes(b"<\"escaped & bytes'>"),
                         after: "answer",
                     }
-                    => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+                    => Unsupported("Custom serialization is unsupported"));
 
                 value!(option_none: Option::<&str>::None => "");
                 value!(option_some: Some("non-escaped string") => "non-escaped string");
@@ -1611,7 +1611,7 @@ mod tests {
         serialize_as!(str_non_escaped: "non-escaped string" => "<root>non-escaped string</root>");
         serialize_as!(str_escaped: "<\"escaped & string'>" => "<root>&lt;&quot;escaped &amp; string&apos;&gt;</root>");
 
-        err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+        err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("Custom serialization is unsupported"));
 
         serialize_as!(option_none: Option::<&str>::None => "<root/>");
         serialize_as!(option_some: Some("non-escaped string") => "<root>non-escaped string</root>");
@@ -1727,7 +1727,7 @@ mod tests {
                         content: Bytes(b"<\"escaped & bytes'>"),
                         after: "answer",
                     }
-                    => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+                    => Unsupported("Custom serialization is unsupported"));
 
                 text!(option_none: Option::<&str>::None);
                 text!(option_some: Some("non-escaped string") => "non-escaped string");
@@ -1866,7 +1866,7 @@ mod tests {
                         content: Bytes(b"<\"escaped & bytes'>"),
                         after: "answer",
                     }
-                    => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+                    => Unsupported("Custom serialization is unsupported"));
 
                 text!(option_none: Option::<&str>::None);
                 text!(option_some: Some("non-escaped string") => "non-escaped string");
@@ -2005,7 +2005,7 @@ mod tests {
                         content: Bytes(b"<\"escaped & bytes'>"),
                         after: "answer",
                     }
-                    => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+                    => Unsupported("Custom serialization is unsupported"));
 
                 text!(option_none: Option::<&str>::None);
                 text!(option_some: Some("non-escaped string") => "non-escaped string");
@@ -2132,7 +2132,7 @@ mod tests {
 
                 err!(bytes:
                     BTreeMap::from([("$value", Bytes(b"<\"escaped & bytes'>"))])
-                    => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+                    => Unsupported("Custom serialization is unsupported"));
 
                 value!(option_none: Option::<&str>::None);
                 value!(option_some: Some("non-escaped string") => "non-escaped string");
@@ -2253,7 +2253,7 @@ mod tests {
                         content: Bytes(b"<\"escaped & bytes'>"),
                         after: "answer",
                     }
-                    => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+                    => Unsupported("Custom serialization is unsupported"));
 
                 value!(option_none: Option::<&str>::None);
                 value!(option_some: Some("non-escaped string") => "non-escaped string");
@@ -2387,7 +2387,7 @@ mod tests {
                         content: Bytes(b"<\"escaped & bytes'>"),
                         after: "answer",
                     }
-                    => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+                    => Unsupported("Custom serialization is unsupported"));
 
                 value!(option_none: Option::<&str>::None);
                 value!(option_some: Some("non-escaped string") => "non-escaped string");

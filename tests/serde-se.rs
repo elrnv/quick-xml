@@ -1233,7 +1233,7 @@ mod with_root {
     serialize_as!(str_non_escaped: "non-escaped string"; &str => "<root>non-escaped string</root>");
     serialize_as!(str_escaped: "<\"escaped & string'>"; String => "<root>&lt;&quot;escaped &amp; string&apos;&gt;</root>");
 
-    err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+    err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("Custom serialization is unsupported"));
 
     serialize_as!(option_none: Option::<&str>::None => "");
     serialize_as!(option_some: Some("non-escaped string") => "<root>non-escaped string</root>");

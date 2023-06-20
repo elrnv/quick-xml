@@ -12,7 +12,6 @@ use serde::ser::{
 use serde::serde_if_integer128;
 use std::borrow::Cow;
 use std::fmt::Write;
-use super::WriteExt;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum QuoteTarget {
@@ -334,7 +333,7 @@ impl<W: Write> Serializer for AtomicSerializer<W> {
 /// - CDATA content (`<...><![CDATA[cdata]]></...>`)
 ///
 /// [simple types]: https://www.w3.org/TR/xmlschema11-1/#Simple_Type_Definition
-pub struct SimpleTypeSerializer<'i, W: WriteExt> {
+pub struct SimpleTypeSerializer<'i, W: Write> {
     /// Writer to which this serializer writes content
     pub writer: W,
     /// Target for which element is serializing. Affects additional characters to escape.
@@ -345,7 +344,7 @@ pub struct SimpleTypeSerializer<'i, W: WriteExt> {
     pub(crate) indent: Indent<'i>,
 }
 
-impl<'i, W: WriteExt> SimpleTypeSerializer<'i, W> {
+impl<'i, W: Write> SimpleTypeSerializer<'i, W> {
     fn write_str(&mut self, value: &str) -> Result<(), DeError> {
         self.indent.write_indent(&mut self.writer)?;
         Ok(self
@@ -354,7 +353,7 @@ impl<'i, W: WriteExt> SimpleTypeSerializer<'i, W> {
     }
 }
 
-impl<'i, W: WriteExt> Serializer for SimpleTypeSerializer<'i, W> {
+impl<'i, W: Write> Serializer for SimpleTypeSerializer<'i, W> {
     type Ok = W;
     type Error = DeError;
 
@@ -368,10 +367,10 @@ impl<'i, W: WriteExt> Serializer for SimpleTypeSerializer<'i, W> {
 
     write_primitive!();
 
-    fn serialize_bytes(mut self, value: &[u8]) -> Result<Self::Ok, Self::Error> {
-        // Customization point - allows user to decide how to encode bytes
-        self.writer.write_custom(value)?;
-        Ok(self.writer)
+    fn serialize_bytes(self, _value: &[u8]) -> Result<Self::Ok, Self::Error> {
+        Err(DeError::Unsupported(
+            "`serialize_bytes` not supported yet".into(),
+        ))
     }
 
     fn serialize_str(mut self, value: &str) -> Result<Self::Ok, Self::Error> {
@@ -1037,7 +1036,7 @@ mod tests {
         serialize_as!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
         err!(bytes: Bytes(b"<\"escaped & bytes'>")
-            => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
+            => Unsupported("Custom serialization is unsupported"));
 
         serialize_as!(option_none: Option::<&str>::None => "");
         serialize_as!(option_some: Some("non-escaped string") => "non-escaped string");
