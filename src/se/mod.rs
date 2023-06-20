@@ -37,13 +37,6 @@ macro_rules! write_primitive {
             self.serialize_str(&value.to_string())
         }
 
-        fn serialize_bytes(self, _value: &[u8]) -> Result<Self::Ok, Self::Error> {
-            //TODO: customization point - allow user to decide how to encode bytes
-            Err(DeError::Unsupported(
-                "`serialize_bytes` not supported yet".into(),
-            ))
-        }
-
         fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
             Ok(self.writer)
         }

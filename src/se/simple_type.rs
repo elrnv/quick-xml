@@ -197,6 +197,12 @@ impl<W: Write> Serializer for AtomicSerializer<W> {
 
     write_primitive!();
 
+    fn serialize_bytes(self, _value: &[u8]) -> Result<Self::Ok, Self::Error> {
+        Err(DeError::Unsupported(
+            "`serialize_bytes` not supported yet".into(),
+        ))
+    }
+
     fn serialize_str(mut self, value: &str) -> Result<Self::Ok, Self::Error> {
         self.write_str(value)?;
         Ok(self.writer)
@@ -360,6 +366,13 @@ impl<'i, W: Write> Serializer for SimpleTypeSerializer<'i, W> {
     type SerializeStructVariant = Impossible<Self::Ok, Self::Error>;
 
     write_primitive!();
+
+    fn serialize_bytes(self, _value: &[u8]) -> Result<Self::Ok, Self::Error> {
+        //TODO: customization point - allow user to decide how to encode bytes
+        Err(DeError::Unsupported(
+            "`serialize_bytes` not supported yet".into(),
+        ))
+    }
 
     fn serialize_str(mut self, value: &str) -> Result<Self::Ok, Self::Error> {
         if value.is_empty() {
