@@ -557,7 +557,7 @@ pub(super) mod tests {
         serialize_as!(str_non_escaped: "non-escaped string" => "non-escaped string");
         serialize_as!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
-        err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("`serialize_bytes` not supported yet"));
+        err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
 
         serialize_as!(option_none: Option::<Enum>::None => "");
         serialize_as!(option_some: Some("non-escaped string") => "non-escaped string");
@@ -745,7 +745,7 @@ pub(super) mod tests {
         serialize_as!(str_non_escaped: "non-escaped string" => "non-escaped string");
         serialize_as!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
-        err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("`serialize_bytes` not supported yet"));
+        err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
 
         serialize_as!(option_none: Option::<Enum>::None => "");
         serialize_as!(option_some: Some(Enum::Unit) => "<Unit/>");

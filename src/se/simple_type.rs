@@ -12,7 +12,7 @@ use serde::ser::{
 use serde::serde_if_integer128;
 use std::borrow::Cow;
 use std::fmt::Write;
-use super:::WriteExt;
+use super::WriteExt;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum QuoteTarget {
@@ -1037,7 +1037,7 @@ mod tests {
         serialize_as!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
         err!(bytes: Bytes(b"<\"escaped & bytes'>")
-            => Unsupported("`serialize_bytes` not supported yet"));
+            => Unsupported("Custom serialization is unsupported on types that already implement std::fmt::Write"));
 
         serialize_as!(option_none: Option::<&str>::None => "");
         serialize_as!(option_some: Some("non-escaped string") => "non-escaped string");

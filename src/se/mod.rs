@@ -81,10 +81,11 @@ use std::fmt::Write;
 use std::str::from_utf8;
 
 /// Custom serialization trait.
-/// 
+///
 /// To enable custom serialization of byte sequences, simply wrap a writer into
 /// a custom type and use it to implement this trait.
 pub trait WriteExt: Write {
+    /// Custom write function.
     fn write_custom(&mut self, value: &[u8]) -> Result<(), DeError>;
 }
 
