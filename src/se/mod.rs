@@ -80,6 +80,22 @@ use serde::serde_if_integer128;
 use std::fmt::Write;
 use std::str::from_utf8;
 
+/// Custom serialization trait.
+/// 
+/// To enable custom serialization of byte sequences, simply wrap a writer into
+/// a custom type and use it to implement this trait.
+pub trait WriteExt: Write {
+    fn write_custom(&mut self, value: &[u8]) -> Result<(), DeError>;
+}
+
+impl<W> WriteExt for W where W: Write {
+    fn write_custom(&mut self, _value: &[u8]) -> Result<(), DeError> {
+        Err(DeError::Unsupported(
+            "Custom serialization is unsupported on types that already implement std::fmt::Write".into(),
+        ))
+    }
+}
+
 /// Serialize struct into a `Write`r.
 ///
 /// # Examples
