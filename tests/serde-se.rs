@@ -1233,6 +1233,7 @@ mod with_root {
     serialize_as!(str_non_escaped: "non-escaped string"; &str => "<root>non-escaped string</root>");
     serialize_as!(str_escaped: "<\"escaped & string'>"; String => "<root>&lt;&quot;escaped &amp; string&apos;&gt;</root>");
 
+    #[cfg(not(feature = "binary"))]
     err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("`serialize_bytes` not supported yet"));
 
     serialize_as!(option_none: Option::<&str>::None => "");

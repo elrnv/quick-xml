@@ -37,8 +37,8 @@ macro_rules! write_primitive {
             self.serialize_str(&value.to_string())
         }
 
+        #[cfg(not(feature = "binary"))]
         fn serialize_bytes(self, _value: &[u8]) -> Result<Self::Ok, Self::Error> {
-            //TODO: customization point - allow user to decide how to encode bytes
             Err(DeError::Unsupported(
                 "`serialize_bytes` not supported yet".into(),
             ))
@@ -73,6 +73,7 @@ macro_rules! write_primitive {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+pub mod write;
 mod content;
 mod element;
 pub(crate) mod key;
@@ -84,8 +85,12 @@ use crate::errors::serialize::DeError;
 use crate::writer::Indentation;
 use serde::ser::{self, Serialize};
 use serde::serde_if_integer128;
+#[cfg(not(feature = "binary"))]
 use std::fmt::Write;
+#[cfg(feature = "binary")]
+use write::Write;
 use std::str::from_utf8;
+
 
 /// Serialize struct into a `Write`r.
 ///

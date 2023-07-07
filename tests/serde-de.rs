@@ -145,9 +145,17 @@ mod trivial {
 
             eof!(string: String = $value);
 
+            #[cfg(feature = "binary")]
+            eof!(byte_buf: ByteBuf = $value);
+
+            #[cfg(feature = "binary")]
+            eof!(bytes: Bytes = $value);
+
             /// XML does not able to store binary data
             #[test]
+            #[cfg(not(feature = "binary"))]
             fn byte_buf() {
+                use pretty_assertions::assert_eq;
                 match from_str::<ByteBuf>($value) {
                     Err(DeError::Unsupported(msg)) => {
                         assert_eq!(msg, "binary data content is not supported by XML format")
@@ -161,7 +169,9 @@ mod trivial {
 
             /// XML does not able to store binary data
             #[test]
+            #[cfg(not(feature = "binary"))]
             fn bytes() {
+                use pretty_assertions::assert_eq;
                 match from_str::<Bytes>($value) {
                     Err(DeError::Unsupported(msg)) => {
                         assert_eq!(msg, "binary data content is not supported by XML format")
@@ -189,7 +199,6 @@ mod trivial {
     /// Empty document should considered invalid no matter what type we try to deserialize
     mod empty_doc {
         use super::*;
-        use pretty_assertions::assert_eq;
 
         eof!("");
     }
@@ -197,7 +206,6 @@ mod trivial {
     /// Document that contains only comment should be handled as if it is empty
     mod only_comment {
         use super::*;
-        use pretty_assertions::assert_eq;
 
         eof!("<!--comment-->");
     }

@@ -37,6 +37,13 @@ impl<W: Write> Serializer for QNameSerializer<W> {
 
     write_primitive!();
 
+    #[cfg(feature = "binary")]
+    fn serialize_bytes(self, _value: &[u8]) -> Result<Self::Ok, Self::Error> {
+        Err(DeError::Unsupported(
+            "`serialize_bytes` not supported yet".into(),
+        ))
+    }
+
     fn serialize_str(mut self, value: &str) -> Result<Self::Ok, Self::Error> {
         self.write_str(value)?;
         Ok(self.writer)

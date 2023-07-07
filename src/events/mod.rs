@@ -1040,7 +1040,7 @@ impl<'a> AsRef<Event<'a>> for Event<'a> {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[inline]
-fn str_cow_to_bytes<'a, C: Into<Cow<'a, str>>>(content: C) -> Cow<'a, [u8]> {
+pub(crate) fn str_cow_to_bytes<'a, C: Into<Cow<'a, str>>>(content: C) -> Cow<'a, [u8]> {
     match content.into() {
         Cow::Borrowed(s) => Cow::Borrowed(s.as_bytes()),
         Cow::Owned(s) => Cow::Owned(s.into_bytes()),

@@ -1841,11 +1841,24 @@ macro_rules! deserialize_primitives {
         }
 
         /// Returns [`DeError::Unsupported`]
+        #[cfg(not(feature = "binary"))]
         fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value, DeError>
         where
             V: Visitor<'de>,
         {
             Err(DeError::Unsupported("binary data content is not supported by XML format".into()))
+        }
+
+        #[cfg(feature = "binary")]
+        fn deserialize_bytes<V>($($mut)? self, visitor: V) -> Result<V::Value, DeError>
+        where
+            V: Visitor<'de>,
+        {
+            let bytes = self.read_bytes()?;
+            match bytes {
+                Cow::Borrowed(bytes) => visitor.visit_borrowed_bytes(bytes),
+                Cow::Owned(bytes) => visitor.visit_bytes(bytes.as_slice()),
+            }
         }
 
         /// Forwards deserialization to the [`deserialize_bytes`](#method.deserialize_bytes).
@@ -1983,6 +1996,12 @@ impl<'a> From<&'a str> for Text<'a> {
     }
 }
 
+/// Bytes
+#[derive(Debug, PartialEq, Eq)]
+pub struct Bytes<'a> {
+    bytes: Cow<'a, [u8]>,
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Simplified event which contains only these variants that used by deserializer
@@ -2001,6 +2020,9 @@ pub enum DeEvent<'a> {
     /// [`Comment`]: Event::Comment
     /// [`PI`]: Event::PI
     Text(Text<'a>),
+    /// Bytes
+    #[cfg(feature = "binary")]
+    Bytes(Bytes<'a>),
     /// End of XML document.
     Eof,
 }
@@ -2153,7 +2175,9 @@ impl<'i, R: XmlRead<'i>, E: EntityResolver> XmlReader<'i, R, E> {
                     if self.need_trim_end() && e.inplace_trim_end() {
                         continue;
                     }
-                    self.drain_text(e.unescape_with(|entity| self.entity_resolver.resolve(entity))?)
+                    let result = e.unescape_with(|entity| self.entity_resolver.resolve(entity));
+                    dbg!(&result);
+                    self.drain_text(result?)
                 }
                 PayloadEvent::CData(e) => self.drain_text(e.decode()?),
                 PayloadEvent::DocType(e) => {
@@ -2534,6 +2558,12 @@ where
         self.read_string_impl(true)
     }
 
+    #[cfg(feature = "binary")]
+    #[inline]
+    fn read_bytes(&mut self) -> Result<Cow<'de, [u8]>, DeError> {
+        self.read_bytes_impl()
+    }
+
     /// Consumes consequent [`Text`] and [`CData`] (both a referred below as a _text_)
     /// events, merge them into one string. If there are no such events, returns
     /// an empty string.
@@ -2582,7 +2612,22 @@ where
                 DeEvent::End(end) if end.name() == e.name() => Ok("".into()),
                 DeEvent::End(end) => Err(DeError::UnexpectedEnd(end.name().as_ref().to_owned())),
                 DeEvent::Eof => Err(DeError::UnexpectedEof),
+                #[cfg(feature = "binary")]
+                DeEvent::Bytes(_) => Err(DeError::Unsupported("Bytes are unsupported".into())),
             },
+            DeEvent::Start(e) => Err(DeError::UnexpectedStart(e.name().as_ref().to_owned())),
+            DeEvent::End(e) => Err(DeError::UnexpectedEnd(e.name().as_ref().to_owned())),
+            DeEvent::Eof => Err(DeError::UnexpectedEof),
+            #[cfg(feature = "binary")]
+            DeEvent::Bytes(_) => Err(DeError::Unsupported("Bytes are unsupported".into())),
+        }
+    }
+
+    #[cfg(feature = "binary")]
+    fn read_bytes_impl(&mut self) -> Result<Cow<'de, [u8]>, DeError> {
+        match self.next()? {
+            DeEvent::Text(e) => Ok(crate::events::str_cow_to_bytes(e.text)),
+            DeEvent::Bytes(e) => Ok(e.bytes),
             DeEvent::Start(e) => Err(DeError::UnexpectedStart(e.name().as_ref().to_owned())),
             DeEvent::End(e) => Err(DeError::UnexpectedEnd(e.name().as_ref().to_owned())),
             DeEvent::Eof => Err(DeError::UnexpectedEof),
@@ -2749,6 +2794,8 @@ where
             DeEvent::End(e) => Err(DeError::UnexpectedEnd(e.name().as_ref().to_owned())),
             DeEvent::Text(_) => Err(DeError::ExpectedStart),
             DeEvent::Eof => Err(DeError::UnexpectedEof),
+            #[cfg(feature = "binary")]
+            DeEvent::Bytes(_) => Err(DeError::Unsupported("Bytes are unsupported".into())),
         }
     }
 
@@ -2781,6 +2828,8 @@ where
             DeEvent::Text(_) => visitor.visit_unit(),
             DeEvent::End(e) => Err(DeError::UnexpectedEnd(e.name().as_ref().to_owned())),
             DeEvent::Eof => Err(DeError::UnexpectedEof),
+            #[cfg(feature = "binary")]
+            DeEvent::Bytes(_) => Err(DeError::Unsupported("Bytes are unsupported".into())),
         }
     }
 

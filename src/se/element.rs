@@ -11,7 +11,10 @@ use serde::ser::{
     SerializeTupleStruct, SerializeTupleVariant, Serializer,
 };
 use serde::serde_if_integer128;
+#[cfg(not(feature = "binary"))]
 use std::fmt::Write;
+#[cfg(feature = "binary")]
+use super::write::Write;
 
 macro_rules! write_primitive {
     ($method:ident ( $ty:ty )) => {
@@ -652,6 +655,7 @@ mod tests {
         serialize_as!(str_non_escaped: "non-escaped string" => "<root>non-escaped string</root>");
         serialize_as!(str_escaped: "<\"escaped & string'>" => "<root>&lt;&quot;escaped &amp; string&apos;&gt;</root>");
 
+        #[cfg(not(feature = "binary"))]
         err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("`serialize_bytes` not supported yet"));
 
         serialize_as!(option_none: Option::<&str>::None => "<root/>");
@@ -762,6 +766,7 @@ mod tests {
                 text!(str_non_escaped: "non-escaped string" => "non-escaped string");
                 text!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
+                #[cfg(not(feature = "binary"))]
                 err!(bytes:
                     Text {
                         before: "answer",
@@ -889,6 +894,7 @@ mod tests {
                 text!(str_non_escaped: "non-escaped string" => "non-escaped string");
                 text!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
+                #[cfg(not(feature = "binary"))]
                 err!(bytes:
                     Text {
                         before: "answer",
@@ -1016,6 +1022,7 @@ mod tests {
                 text!(str_non_escaped: "non-escaped string" => "non-escaped string");
                 text!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
+                #[cfg(not(feature = "binary"))]
                 err!(bytes:
                     SpecialEnum::Text {
                         before: "answer",
@@ -1147,6 +1154,7 @@ mod tests {
                 value!(str_non_escaped: "non-escaped string" => "non-escaped string");
                 value!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
+                #[cfg(not(feature = "binary"))]
                 err!(bytes:
                     BTreeMap::from([("$value", Bytes(b"<\"escaped & bytes'>"))])
                     => Unsupported("`serialize_bytes` not supported yet"));
@@ -1253,6 +1261,7 @@ mod tests {
                 value!(str_non_escaped: "non-escaped string" => "non-escaped string");
                 value!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
+                #[cfg(not(feature = "binary"))]
                 err!(bytes:
                     Value {
                         before: "answer",
@@ -1375,6 +1384,7 @@ mod tests {
                 value!(str_non_escaped: "non-escaped string" => "non-escaped string");
                 value!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
+                #[cfg(not(feature = "binary"))]
                 err!(bytes:
                     SpecialEnum::Value {
                         before: "answer",
@@ -1524,6 +1534,30 @@ mod tests {
         use crate::writer::Indentation;
         use pretty_assertions::assert_eq;
 
+        /// Checks that given `$data` successfully serialized as `$expected` into IoWriter.
+        #[cfg(feature = "binary")]
+        macro_rules! serialize_binary_as {
+            ($name:ident: $data:expr => $expected:literal) => {
+                #[test]
+                fn $name() {
+                    let mut buffer = crate::se::write::IoWriter(Vec::<u8>::new());
+                    let ser = ElementSerializer {
+                        ser: ContentSerializer {
+                            writer: &mut buffer,
+                            level: QuoteLevel::Full,
+                            indent: Indent::Owned(Indentation::new(b' ', 2)),
+                            write_indent: false,
+                            expand_empty_elements: false,
+                        },
+                        key: XmlName("root"),
+                    };
+
+                    $data.serialize(ser).unwrap();
+                    assert_eq!(String::from_utf8_lossy(&buffer.0), $expected);
+                }
+            };
+        }
+
         /// Checks that given `$data` successfully serialized as `$expected`
         macro_rules! serialize_as {
             ($name:ident: $data:expr => $expected:expr) => {
@@ -1616,6 +1650,11 @@ mod tests {
         serialize_as!(str_non_escaped: "non-escaped string" => "<root>non-escaped string</root>");
         serialize_as!(str_escaped: "<\"escaped & string'>" => "<root>&lt;&quot;escaped &amp; string&apos;&gt;</root>");
 
+        #[cfg(feature = "binary")]
+        serialize_binary_as!(bytes: Bytes(b"<\"non-escaped & bytes'>") => "<root><\"non-escaped & bytes'></root>");
+        #[cfg(feature = "binary")]
+        serialize_binary_as!(binary_writer_str_escaped: "<\"escaped & string'>" => "<root>&lt;&quot;escaped &amp; string&apos;&gt;</root>");
+        #[cfg(not(feature = "binary"))]
         err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("`serialize_bytes` not supported yet"));
 
         serialize_as!(option_none: Option::<&str>::None => "<root/>");
@@ -1726,6 +1765,7 @@ mod tests {
                 text!(str_non_escaped: "non-escaped string" => "non-escaped string");
                 text!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
+                #[cfg(not(feature = "binary"))]
                 err!(bytes:
                     Text {
                         before: "answer",
@@ -1865,6 +1905,7 @@ mod tests {
                 text!(str_non_escaped: "non-escaped string" => "non-escaped string");
                 text!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
+                #[cfg(not(feature = "binary"))]
                 err!(bytes:
                     Text {
                         before: "answer",
@@ -2004,6 +2045,7 @@ mod tests {
                 text!(str_non_escaped: "non-escaped string" => "non-escaped string");
                 text!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
+                #[cfg(not(feature = "binary"))]
                 err!(bytes:
                     SpecialEnum::Text {
                         before: "answer",
@@ -2135,6 +2177,7 @@ mod tests {
                 value!(str_non_escaped: "non-escaped string" => "non-escaped string");
                 value!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
+                #[cfg(not(feature = "binary"))]
                 err!(bytes:
                     BTreeMap::from([("$value", Bytes(b"<\"escaped & bytes'>"))])
                     => Unsupported("`serialize_bytes` not supported yet"));
@@ -2252,6 +2295,7 @@ mod tests {
                 value!(str_non_escaped: "non-escaped string" => "non-escaped string");
                 value!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
+                #[cfg(not(feature = "binary"))]
                 err!(bytes:
                     Value {
                         before: "answer",
@@ -2386,6 +2430,7 @@ mod tests {
                 value!(str_non_escaped: "non-escaped string" => "non-escaped string");
                 value!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
+                #[cfg(not(feature = "binary"))]
                 err!(bytes:
                     SpecialEnum::Value {
                         before: "answer",

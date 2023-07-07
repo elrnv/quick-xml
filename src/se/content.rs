@@ -8,7 +8,10 @@ use serde::ser::{
     Impossible, Serialize, SerializeSeq, SerializeTuple, SerializeTupleStruct, Serializer,
 };
 use serde::serde_if_integer128;
+#[cfg(not(feature = "binary"))]
 use std::fmt::Write;
+#[cfg(feature = "binary")]
+use super::write::Write;
 
 macro_rules! write_primitive {
     ($method:ident ( $ty:ty )) => {
@@ -479,10 +482,36 @@ pub(super) mod tests {
         },
     }
 
+    #[test]
+    fn hello() {
+
+    }
+
     mod without_indent {
         use super::Struct;
         use super::*;
         use pretty_assertions::assert_eq;
+
+        /// Checks that given `$data` successfully serialized as `$expected` into IoWriter.
+        #[cfg(feature = "binary")]
+        macro_rules! serialize_binary_as {
+            ($name:ident: $data:expr => $expected:literal) => {
+                #[test]
+                fn $name() {
+                    let mut buffer = crate::se::write::IoWriter(Vec::<u8>::new());
+                    let ser = ContentSerializer {
+                        writer: &mut buffer,
+                        level: QuoteLevel::Full,
+                        indent: Indent::None,
+                        write_indent: false,
+                        expand_empty_elements: false,
+                    };
+
+                    $data.serialize(ser).unwrap();
+                    assert_eq!(String::from_utf8_lossy(&buffer.0), $expected);
+                }
+            };
+        }
 
         /// Checks that given `$data` successfully serialized as `$expected`
         macro_rules! serialize_as {
@@ -571,6 +600,11 @@ pub(super) mod tests {
         serialize_as!(str_non_escaped: "non-escaped string" => "non-escaped string");
         serialize_as!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
+        #[cfg(feature = "binary")]
+        serialize_binary_as!(bytes: Bytes(b"<\"non-escaped & bytes'>") => "<\"non-escaped & bytes'>");
+        #[cfg(feature = "binary")]
+        serialize_binary_as!(binary_writer_str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
+        #[cfg(not(feature = "binary"))]
         err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("`serialize_bytes` not supported yet"));
 
         serialize_as!(option_none: Option::<Enum>::None => "");
@@ -675,6 +709,27 @@ pub(super) mod tests {
         use crate::writer::Indentation;
         use pretty_assertions::assert_eq;
 
+        /// Checks that given `$data` successfully serialized as `$expected` into IoWriter.
+        #[cfg(feature = "binary")]
+        macro_rules! serialize_binary_as {
+            ($name:ident: $data:expr => $expected:literal) => {
+                #[test]
+                fn $name() {
+                    let mut buffer = crate::se::write::IoWriter(Vec::<u8>::new());
+                    let ser = ContentSerializer {
+                        writer: &mut buffer,
+                        level: QuoteLevel::Full,
+                        indent: Indent::Owned(Indentation::new(b' ', 2)),
+                        write_indent: false,
+                        expand_empty_elements: false,
+                    };
+
+                    $data.serialize(ser).unwrap();
+                    assert_eq!(String::from_utf8_lossy(&buffer.0), $expected);
+                }
+            };
+        }
+
         /// Checks that given `$data` successfully serialized as `$expected`
         macro_rules! serialize_as {
             ($name:ident: $data:expr => $expected:literal) => {
@@ -761,6 +816,11 @@ pub(super) mod tests {
         serialize_as!(str_non_escaped: "non-escaped string" => "non-escaped string");
         serialize_as!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
+        #[cfg(feature = "binary")]
+        serialize_binary_as!(bytes: Bytes(b"<\"non-escaped & bytes'>") => "<\"non-escaped & bytes'>");
+        #[cfg(feature = "binary")]
+        serialize_binary_as!(binary_writer_str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
+        #[cfg(not(feature = "binary"))]
         err!(bytes: Bytes(b"<\"escaped & bytes'>") => Unsupported("`serialize_bytes` not supported yet"));
 
         serialize_as!(option_none: Option::<Enum>::None => "");

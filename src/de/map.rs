@@ -295,6 +295,8 @@ where
                 // We cannot get `Eof` legally, because we always inside of the
                 // opened tag `self.start`
                 DeEvent::Eof => Err(DeError::UnexpectedEof),
+                #[cfg(feature = "binary")]
+                DeEvent::Bytes(_) => Err(DeError::Unsupported("Bytes are unsupported".into())),
             }
         }
     }
@@ -471,6 +473,12 @@ where
     #[inline]
     fn read_string(&mut self) -> Result<Cow<'de, str>, DeError> {
         self.map.de.read_string_impl(self.allow_start)
+    }
+
+    #[cfg(feature = "binary")]
+    #[inline]
+    fn read_bytes(&mut self) -> Result<Cow<'de, [u8]>, DeError> {
+        self.map.de.read_bytes_impl()
     }
 }
 
@@ -738,6 +746,13 @@ where
     #[inline]
     fn read_string(&mut self) -> Result<Cow<'de, str>, DeError> {
         self.map.de.read_string_impl(true)
+    }
+
+    /// Returns the next bytes.
+    #[cfg(feature = "binary")]
+    #[inline]
+    fn read_bytes(&mut self) -> Result<Cow<'de, [u8]>, DeError> {
+        self.map.de.read_bytes_impl()
     }
 }
 

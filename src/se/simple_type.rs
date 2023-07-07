@@ -11,7 +11,10 @@ use serde::ser::{
 };
 use serde::serde_if_integer128;
 use std::borrow::Cow;
+#[cfg(not(feature = "binary"))]
 use std::fmt::Write;
+#[cfg(feature = "binary")]
+use super::write::Write;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum QuoteTarget {
@@ -197,6 +200,13 @@ impl<W: Write> Serializer for AtomicSerializer<W> {
 
     write_primitive!();
 
+    #[cfg(feature = "binary")]
+    fn serialize_bytes(self, _value: &[u8]) -> Result<Self::Ok, Self::Error> {
+        Err(DeError::Unsupported(
+            "`serialize_bytes` not supported yet".into(),
+        ))
+    }
+
     fn serialize_str(mut self, value: &str) -> Result<Self::Ok, Self::Error> {
         self.write_str(value)?;
         Ok(self.writer)
@@ -347,6 +357,14 @@ impl<'i, W: Write> SimpleTypeSerializer<'i, W> {
     }
 }
 
+#[cfg(feature = "binary")]
+impl<'i, W: Write> SimpleTypeSerializer<'i, W> {
+    fn write_bytes(&mut self, value: &[u8]) -> Result<(), DeError> {
+        self.writer.write(value).unwrap();
+        Ok(())
+    }
+}
+
 impl<'i, W: Write> Serializer for SimpleTypeSerializer<'i, W> {
     type Ok = W;
     type Error = DeError;
@@ -360,6 +378,12 @@ impl<'i, W: Write> Serializer for SimpleTypeSerializer<'i, W> {
     type SerializeStructVariant = Impossible<Self::Ok, Self::Error>;
 
     write_primitive!();
+
+    #[cfg(feature = "binary")]
+    fn serialize_bytes(mut self, value: &[u8]) -> Result<Self::Ok, Self::Error> {
+        self.write_bytes(value)?;
+        Ok(self.writer)
+    }
 
     fn serialize_str(mut self, value: &str) -> Result<Self::Ok, Self::Error> {
         if value.is_empty() {
@@ -545,6 +569,7 @@ impl<'i, W: Write> SerializeTupleStruct for SimpleSeq<'i, W> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(not(feature = "binary"))]
     use crate::utils::Bytes;
     use serde::Serialize;
     use std::collections::BTreeMap;
@@ -905,6 +930,7 @@ mod tests {
         serialize_as!(str_non_escaped: "non-escaped-string" => "non-escaped-string");
         serialize_as!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped&#32;&amp;&#32;string&apos;&gt;");
 
+        #[cfg(not(feature = "binary"))]
         err!(bytes: Bytes(b"<\"escaped & bytes'>")
             => Unsupported("`serialize_bytes` not supported yet"));
 
@@ -1023,6 +1049,7 @@ mod tests {
         serialize_as!(str_non_escaped: "non-escaped string" => "non-escaped string");
         serialize_as!(str_escaped: "<\"escaped & string'>" => "&lt;&quot;escaped &amp; string&apos;&gt;");
 
+        #[cfg(not(feature = "binary"))]
         err!(bytes: Bytes(b"<\"escaped & bytes'>")
             => Unsupported("`serialize_bytes` not supported yet"));
 

@@ -183,6 +183,14 @@ serde-types = ["serde/derive"]
 ## If you need that, use the `serde-types` feature.
 serialize = ["serde"] # "dep:" prefix only avalible from Rust 1.60
 
+## Enables support for custom parsing of binary text data in XML files.
+##
+## Although the XML spec does not support this binary data, this feature allows
+## extensions for XML files to store custom binary data.
+## Deserialization will be forwarded to a byte deserializer if a read even fails
+## to decode.
+binary = []
+
 [package.metadata.docs.rs]
 # document all features
 all-features = true

@@ -51,6 +51,8 @@ where
             ),
             DeEvent::End(e) => return Err(DeError::UnexpectedEnd(e.name().into_inner().to_vec())),
             DeEvent::Eof => return Err(DeError::UnexpectedEof),
+            #[cfg(feature = "binary")]
+            DeEvent::Bytes(_) => return Err(DeError::Unsupported("Bytes are unsupported".into())),
         };
         Ok((
             name,
